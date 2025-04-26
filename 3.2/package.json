@@ -11,16 +11,24 @@
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
     "express": "^4.21.2",
+    "express-basic-auth": "^1.2.1",
+    "express-ejs-layouts": "^2.5.1",
     "http-errors": "~1.6.3",
     "jade": "^0.29.0",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "multer": "^1.4.5-lts.2",
+    "mysql2": "^3.14.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/express-ejs-layouts": "^2.5.4",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.13.10",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.9",
+    "prettier-plugin-ejs": "^1.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }

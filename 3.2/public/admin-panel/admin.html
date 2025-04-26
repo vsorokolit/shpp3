@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Бібліотека++ - Адмінка</title>
+    <link rel="stylesheet" href="/admin-panel/admin-style.css" />
+  </head>
+  <body>
+    <h1>Бібліотека++</h1>
+
+    <div class="container">
+      <!-- Ліва частина - таблиця -->
+      <div class="left-panel">
+        <table id="books-table">
+          <thead>
+            <tr>
+              <th>Назва книги</th>
+              <th>Автори</th>
+              <th>Рік</th>
+              <th>Дії</th>
+              <th>Кліків</th>
+            </tr>
+          </thead>
+          <tbody id="books-body">
+            <!-- Книги будуть додані через JavaScript -->
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <button id="prevPage" class="btn btn-primary">Назад</button>
+          <span id="currentPage">1</span>
+          <button id="nextPage" class="btn btn-primary">Вперед</button>
+        </div>
+      </div>
+
+      <!-- Права частина - форма -->
+      <div class="right-panel">
+        <form class="add-book" action="/api/add-book" method="POST">
+          <h3>Додати нову книгу</h3>
+
+          <div class="form-columns">
+            <!-- Ліва колонка форми -->
+            <div class="form-left">
+              <div class="form-group">
+                <label for="title">Назва книги</label>
+                <input type="text" id="title" name="title" required />
+              </div>
+
+              <div class="form-group">
+                <label for="year">Рік видання</label>
+                <input type="number" id="year" name="year" required />
+              </div>
+
+              <div class="form-group">
+                <label>Завантажити зображення</label>
+                <div class="file-upload">
+                  <label for="image" class="file-upload-btn">Вибрати файл</label>
+                  <input type="file" id="image" name="image" class="file-upload-input" accept="image/*" />
+                  <img id="imagePreview" class="image-preview" src="#" alt="Попередній перегляд" />
+                </div>
+              </div>
+              <script>
+                document.getElementById("image").addEventListener("change", function (e) {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                      const preview = document.getElementById("imagePreview");
+                      preview.src = event.target.result;
+                      preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                });
+              </script>
+            </div>
+
+            <!-- Права колонка форми -->
+            <div class="form-right">
+              <div class="form-group">
+                <label for="author1">Автор 1</label>
+                <input type="text" id="author1" name="authors[]" required />
+              </div>
+
+              <div class="form-group">
+                <label for="author2">Автор 2</label>
+                <input type="text" id="author2" name="authors[]" />
+              </div>
+
+              <div class="form-group">
+                <label for="author3">Автор 3</label>
+                <input type="text" id="author3" name="authors[]" />
+              </div>
+
+              <div class="form-group">
+                <label for="description">Опис книги</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Футер форми -->
+          <div class="form-footer">
+            <button type="submit" class="add-btn">ДОДАТИ КНИГУ</button>
+            <p class="note">*залиште поля порожніми, якщо авторів менше 3</p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      let currentPage = 1;
+
+      async function loadBooks(page = 1) {
+        try {
+          const response = await fetch(`/api/books?page=${page}`);
+          const data = await response.json();
+          renderBooks(data.books);
+
+          // Оновити інформацію про сторінку
+          document.getElementById("currentPage").textContent = `${data.currentPage} / ${data.totalPages}`;
+          // Активувати/деактивувати кнопки
+          document.getElementById("prevPage").disabled = data.currentPage === 1;
+          document.getElementById("nextPage").disabled = data.currentPage === data.totalPages;
+
+          currentPage = data.currentPage;
+        } catch (error) {
+          console.error("Помилка завантаження книг:", error);
+        }
+      }
+
+      function renderBooks(books) {
+        const tbody = document.getElementById("books-body");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        if (!books || !Array.isArray(books)) {
+          console.error("Books data is invalid:", books);
+          return;
+        }
+
+        books.forEach((book) => {
+          if (!book) return;
+
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${escapeHtml(book.title)}</td>
+            <td>${escapeHtml(book.authors)}</td>
+            <td>${book.year || ""}</td>
+            <td><a href="#" class="delete-btn" data-id="${book.id || ""}">видалити</a></td>
+            <td>${book.clicks || 0}</td>
+        `;
+
+          tbody.appendChild(row);
+        });
+      }
+      // Обробники подій для кнопок
+      document.getElementById("prevPage").addEventListener("click", () => {
+        if (currentPage > 1) {
+          loadBooks(currentPage - 1);
+        }
+      });
+
+      document.getElementById("nextPage").addEventListener("click", () => {
+        loadBooks(currentPage + 1);
+      });
+
+      document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", deleteBook);
+      });
+
+      async function deleteBook(e) {
+        e.preventDefault();
+        const bookId = this.getAttribute("data-id");
+
+        try {
+          const response = await fetch(`/api/books/${bookId}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            loadBooks(); // Перезавантажуємо список книг
+          } else {
+            alert("Помилка при видаленні");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Помилка сервера");
+        }
+      }
+
+      // Допоміжна функція для екранування HTML
+      function escapeHtml(unsafe) {
+        if (!unsafe) return "";
+        return String(unsafe)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // Завантажуємо книги при завантаженні сторінки
+      document.addEventListener("DOMContentLoaded", loadBooks);
+    </script>
+  </body>
+</html>

@@ -1,8 +1,8 @@
-import express, { Response, Request } from "express";
+// import express, { Response, Request } from "express";
 // import { getItems, addItem, editItem, deleteItem } from "./routesItems";
 // import { login, logout, register } from "./routesAuth";
 
-const router = express.Router();
+// const router = express.Router();
 
 // router.all("/", async (req: Request, res: Response) => {
 //   const { action } = req.query;
@@ -41,4 +41,4 @@ const router = express.Router();
 //   }
 // });
 
-export default router;
+// export default router;

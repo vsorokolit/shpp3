@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Адмінка</title>
+  <link rel="stylesheet" href="/admin-panel/admin-style.css" />
+</head>
+
+<body>
+  <h1>F1N4Lity++</h1>
+
+  <div class="container">
+    <!-- Ліва частина - таблиця -->
+    <div class="left-panel">
+      <table id="books-table">
+        <thead>
+          <tr>
+            <th>Назва книги</th>
+            <th>Автори</th>
+            <th>Рік</th>
+            <th>Дії</th>
+            <th>Кліків</th>
+          </tr>
+        </thead>
+        <tbody id="books-body">
+          <% if (books && books.length > 0) { %>
+          <% books.forEach(book => { %>
+          <tr>
+            <td><%= book.title %></td>
+            <td><%= Array.isArray(book.authors) ? book.authors.join(', ') : book.authors %></td>
+            <td><%= book.year || '' %></td>
+            <td>
+              <form action="/api/delete-book/<%= book.id %>" method="POST" style="display: inline;">
+                <button type="submit" class="delete-btn" onclick="return confirm('Ви впевнені, що хочете видалити цю книгу?')">Видалити</button>
+              </form>
+            </td>
+            <td><%= book.clicks || 0 %></td>
+          </tr>
+          <% }); %>
+          <% } else { %>
+          <tr>
+            <td colspan="5">Книги не знайдено</td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <button id="prevPage" class="btn btn-primary" <%= currentPage === 1 ? 'disabled' : '' %>>Назад</button>
+        <span id="currentPage"><%= currentPage %> / <%= totalPages %></span>
+        <button id="nextPage" class="btn btn-primary" <%= currentPage === totalPages ? 'disabled' : '' %>>Вперед</button>
+      </div>
+    </div>
+
+    <!-- Права частина - форма -->
+    <div class="right-panel">
+      <form class="create-book" action="/api/create-book" method="POST" enctype="multipart/form-data">
+        <h3>Додати нову книгу</h3>
+
+        <div class="form-columns">
+          <!-- Ліва колонка форми -->
+          <div class="form-left">
+            <div class="form-group">
+              <label for="title">Назва книги</label>
+              <input type="text" id="title" name="title" required />
+            </div>
+
+            <div class="form-group">
+              <label for="year">Рік видання</label>
+              <input type="number" id="year" name="year" required />
+            </div>
+
+            <div class="form-group">
+              <label>Завантажити зображення</label>
+              <div class="file-upload">
+                <label for="image" class="file-upload-btn">Вибрати файл</label>
+                <input type="file" id="image" name="image" class="file-upload-input" accept="image/*" />
+                <img id="imagePreview" class="image-preview" src="#" alt="Попередній перегляд" style="display: none;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Права колонка форми -->
+          <div class="form-right">
+            <div class="form-group">
+              <label for="author1">Автор 1</label>
+              <input type="text" id="author1" name="authors[]" required />
+            </div>
+
+            <div class="form-group">
+              <label for="author2">Автор 2</label>
+              <input type="text" id="author2" name="authors[]" />
+            </div>
+
+            <div class="form-group">
+              <label for="author3">Автор 3</label>
+              <input type="text" id="author3" name="authors[]" />
+            </div>
+
+            <div class="form-group">
+              <label for="description">Опис книги</label>
+              <textarea id="description" name="description" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Футер форми -->
+        <div class="form-footer">
+          <button type="submit" class="add-btn">ДОДАТИ КНИГУ</button>
+          <p class="note">*залиште поля порожніми, якщо авторів менше 3</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Обробник для попереднього перегляду зображення
+    document.getElementById("image").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const preview = document.getElementById("imagePreview");
+          preview.src = event.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Пагінація
+    document.getElementById("prevPage").addEventListener("click", () => {
+      window.location.href = '/admin?page=<%= currentPage - 1 %>';
+    });
+
+    document.getElementById("nextPage").addEventListener("click", () => {
+      window.location.href = '/admin?page=<%= currentPage + 1 %>';
+    });
+  </script>
+</body>
+
+</html>
