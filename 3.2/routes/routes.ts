@@ -11,7 +11,7 @@ router.get("/", navigationController.getHomePage);
 router.get("/book/:id", navigationController.getBookPage);
 
 router.get("/api/books", bookController.getBooksWithPagination);
-router.post("/api/delete-book/:id", auth.adminAuthMiddleware, bookController.deleteBookById);
+router.delete("/api/delete-book/:id", auth.adminAuthMiddleware, bookController.deleteBookById);
 router.post("/api/create-book", auth.adminAuthMiddleware, upload.single("image"), bookController.createBook);
 
 router.get("/admin", auth.adminAuthMiddleware, adminController.getAdminPage);

@@ -1,0 +1,5 @@
+<div class="pagination">
+  <button id="prevPage" class="btn btn-primary" <%= currentPage === 1 ? 'disabled' : '' %>>Назад</button>
+  <span id="currentPage"><%= currentPage %> / <%= totalPages %></span>
+  <button id="nextPage" class="btn btn-primary" <%= currentPage === totalPages ? 'disabled' : '' %>>Вперед</button>
+</div>
